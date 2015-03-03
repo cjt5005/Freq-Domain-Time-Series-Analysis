@@ -32,6 +32,7 @@ title('Log-Periodogram of Returns');
 
 
 % Figure 4 - Time Series of Smoothed Returns
+figure()
 a = 1;
 K = 5;
 b = 1/K*ones(K,1);
@@ -70,14 +71,77 @@ transF = JsmoothedReturns./Jreturns;
 plot(f(1:N/2),abs(transF(1:N/2)).^2);
 title('Squared Transfer Function')
 
-%% 
-j = 71;
-N = 1024*16;
-t = 0:N-1;
-K = 300;
-for k = 1:K
-    mc(k) = sum(randn(1,N).*sin(2*pi*j/N*t));
-end
+%% Question 6
+clear all
+close all
+clc
 
-var(mc)/N
-mean(mc)
+load co2res
+load dowdif
+
+N1 = length(co2res);
+N2 = length(dowdif);
+
+pgram1 = 1/(2*pi*N1)*abs(fft(co2res)).^2;
+pgram2 = 1/(2*pi*N2)*abs(fft(dowdif)).^2;
+
+plot(pgram1)
+figure()
+plot(pgram2)
+
+trimmedPgram1 = pgram1(2:N1/2-1);
+trimmedPgram2 = pgram2(2:N2/2-1);
+
+max1 = max(trimmedPgram1);
+max2 = max(trimmedPgram2);
+
+mean1 = mean(trimmedPgram1);
+mean2 = mean(trimmedPgram2);
+
+M1 = length(trimmedPgram1);
+M2 = length(trimmedPgram2);
+p1 = 1-exp(-M1*exp(-max1/mean1))
+p2 = 1-exp(-M2*exp(-max2/mean2))
+
+%% Question 7
+clear all
+close all
+clc
+
+N = 100;
+load x;
+
+pgram = 1/(N)*abs(fft(x)).^2;
+trimmedPgram = pgram(2:N/2-1);
+
+EIj = mean(trimmedPgram);
+
+[H,P,CI,ZVAL] =  ztest(EIj,1,1)
+
+[max1,ind] = max(trimmedPgram);
+
+
+
+mean1 = mean(trimmedPgram);
+M = length(trimmedPgram);
+
+plot(trimmedPgram)
+title('Plot of Periodogram for w2 through w49')
+%Main cycle is at j = 2, corresponding to f = 1/50 or T = 50 samples.
+T = -max1/mean1;
+p1 = 1-exp(-M*exp(T))
+%The probability that the peak of white noise would exceed the observed
+%peak is .5131 so we reject the possibility that the cycle is real.
+
+%% Question 8
+
+x = ones(100,1);
+xpadded = [x;zeros(100,1)];
+Ipadded = abs(fft(xpadded)).^2;
+cr = ifft(Ipadded);
+cr = cr(1:100)
+
+stem(cr)
+
+
+
